@@ -30,11 +30,19 @@ public class Main {
 					"('Star Wars VII : Le reveil de la force', 'J.J. Abrams'),\r\n" + 
 					"('Star Wars VIII : Les derniers jedi', 'Rian Johnson');");
 			
-			//Remplissage de la table Client avec 4 clients
+			//Remplissage de la table Client avec  clients
 			stmt.executeUpdate("INSERT INTO client(nom, prenom, genre) VALUES "+
 					"('Tisserand', 'Julien', 'Homme'),\r\n" +
 					"('Joseph', 'Caleb', 'Homme'),\r\n" +
 					"('Tan', 'Julie', 'Femme'),\r\n" +
+					"('Allemand', 'Guillaume', 'Homme'),\r\n" +
+					"('Aupetit', 'Sapho', 'Femme'),\r\n" +
+					"('Bonnet', 'Arnaud', 'Homme'),\r\n" +
+					"('Ho Chuis', 'Jérome', 'Homme'),\r\n" +
+					"('Juzan', 'Samuel', 'Homme'),\r\n" +
+					"('Nedjari', 'Moussa', 'Homme'),\r\n" +
+					"('Sidi Said Omar', 'Hamida', 'Femme'),\r\n" +
+					"('Thual', 'Jérémy', 'Homme'),\r\n" +
 					"('Guyard', 'Pierre', 'Homme');");
 					
 			//Fermetture des requettes et commit a la base de donnée
