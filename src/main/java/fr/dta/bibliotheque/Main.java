@@ -2,16 +2,22 @@ package fr.dta.bibliotheque;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class Main {
+	static Connection conn = null;
+
 	public static void main(String[] args) {
 
 		String url = "jdbc:postgresql://localhost:5432/bibliotheque";
 
-		try (Connection conn = DriverManager.getConnection(url, "postgres", "postgres");
+		try {
+			conn = DriverManager.getConnection(url, "postgres", "postgres");
 
-				Statement stmt = conn.createStatement()) {
+			Statement stmt = conn.createStatement();
 
 			/*
 			 * La création du DROP ici est pour évitez de remplir plein de fois la BDD. En
@@ -32,17 +38,19 @@ public class Main {
 			stmt.executeUpdate("CREATE TABLE client(id BIGSERIAL PRIMARY KEY, " + "nom varchar(255) NOT NULL, "
 					+ "prenom varchar(255) NOT NULL, " + "genre varchar(255) NOT NULL, "
 					+ "livre_prefere BIGINT, FOREIGN KEY(livre_prefere) REFERENCES livre(id));");
-			
-			//Création de la table Achat
+
+			// Création de la table Achat
 			stmt.executeUpdate("CREATE TABLE achat(id_client BIGINT, FOREIGN KEY (id_client) REFERENCES client (id), "
 					+ "id_livre BIGINT, FOREIGN KEY (id_livre) REFERENCES livre (id));");
 
 			/*
-			 * Explication de la commande : livre_prefere bigint, FOREIGN KEY (livre_prefere) REFERENCES livre(id)
+			 * Explication de la commande : livre_prefere bigint, FOREIGN KEY
+			 * (livre_prefere) REFERENCES livre(id)
 			 * 
 			 * livre prefere bigint =/= bigserial
 			 * FOREIGN KEY (livre_prefere) => Clé étrangère pour la table client
-			 * REFERENCES livre(id) => Reference a l'id de la table livre afin de faire la liaison entre id livre et client
+			 * REFERENCES livre(id) => Reference a l'id de la
+			 * table livre afin de faire la liaison entre id livre et client
 			 * 
 			 */
 
@@ -70,6 +78,10 @@ public class Main {
 			stmt.executeUpdate("INSERT INTO achat(id_client, id_livre) VALUES "
 					+ "((SELECT id FROM client WHERE nom LIKE 'Tisserand'), (SELECT id FROM livre where titre LIKE 'Star Wars I %' ));");
 
+			Livre livre = new Livre("Star Wars I : La menace fantome", "Georges Lucas");
+			livre.setId(1);
+			getClient(livre);
+
 			// Fermetture des requettes et commit a la base de donnée
 			stmt.close();
 			conn.close();
@@ -78,5 +90,19 @@ public class Main {
 			System.out.println(e.getMessage());
 		}
 
+	}
+
+	public static void getClient(Livre titre) throws SQLException {
+
+		PreparedStatement pstmt = conn.prepareStatement(
+				"SELECT * FROM client\r\n" + "JOIN achat ON client.id = achat.id_client\r\n" + "WHERE id_livre = ?;");
+
+		pstmt.setInt(1, titre.getId());
+
+		ResultSet resultat = pstmt.executeQuery();
+
+		while (resultat.next()) {
+			System.out.println(resultat.getString("prenom") + ", " + resultat.getString("nom"));
+		}
 	}
 }
