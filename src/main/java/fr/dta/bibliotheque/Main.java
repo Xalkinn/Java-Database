@@ -18,18 +18,33 @@ public class Main {
 			 * effet, avant de lancer le programme il va clean la BDD avant afin d'avoir une
 			 * BDD propre
 			 */
-			
-			//Création de DROP
-			stmt.executeUpdate("DROP TABLE livre;");
-			stmt.executeUpdate("DROP TABLE Client;");
+
+			// Création de DROP
+			stmt.executeUpdate("DROP TABLE IF EXISTS livre CASCADE;");
+			stmt.executeUpdate("DROP TABLE IF EXISTS client CASCADE;");
+			stmt.executeUpdate("DROP TABLE IF EXISTS achat;");
 
 			// Création de la table Livre
-			stmt.executeUpdate("CREATE TABLE livre(id bigserial PRIMARY KEY, " + "titre varchar(255) NOT NULL, "
+			stmt.executeUpdate("CREATE TABLE livre(id BIGSERIAL PRIMARY KEY, " + "titre varchar(255) NOT NULL, "
 					+ "auteur varchar(255))");
 
 			// Création de la table Client
-			stmt.executeUpdate("CREATE TABLE client(id bigserial PRIMARY KEY, " + "nom varchar(255) NOT NULL, "
-					+ "prenom varchar(255) NOT NULL, " + "genre varchar(255) NOT NULL)");
+			stmt.executeUpdate("CREATE TABLE client(id BIGSERIAL PRIMARY KEY, " + "nom varchar(255) NOT NULL, "
+					+ "prenom varchar(255) NOT NULL, " + "genre varchar(255) NOT NULL, "
+					+ "livre_prefere BIGINT, FOREIGN KEY(livre_prefere) REFERENCES livre(id));");
+			
+			//Création de la table Achat
+			stmt.executeUpdate("CREATE TABLE achat(id_client BIGINT, FOREIGN KEY (id_client) REFERENCES client (id), "
+					+ "id_livre BIGINT, FOREIGN KEY (id_livre) REFERENCES livre (id));");
+
+			/*
+			 * Explication de la commande : livre_prefere bigint, FOREIGN KEY (livre_prefere) REFERENCES livre(id)
+			 * 
+			 * livre prefere bigint =/= bigserial
+			 * FOREIGN KEY (livre_prefere) => Clé étrangère pour la table client
+			 * REFERENCES livre(id) => Reference a l'id de la table livre afin de faire la liaison entre id livre et client
+			 * 
+			 */
 
 			// Remplissage de la table livre avec 8 exemples
 			stmt.executeUpdate("INSERT INTO livre(titre, auteur) VALUES "
@@ -50,6 +65,10 @@ public class Main {
 					+ "('Ho Chuis', 'Jérome', 'Homme'),\r\n" + "('Juzan', 'Samuel', 'Homme'),\r\n"
 					+ "('Nedjari', 'Moussa', 'Homme'),\r\n" + "('Sidi Said Omar', 'Hamida', 'Femme'),\r\n"
 					+ "('Thual', 'Jérémy', 'Homme'),\r\n" + "('Guyard', 'Pierre', 'Homme');");
+
+			// Remplissage de la table achat qui nous fera le lien entre client et livre
+			stmt.executeUpdate("INSERT INTO achat(id_client, id_livre) VALUES "
+					+ "((SELECT id FROM client WHERE nom LIKE 'Tisserand'), (SELECT id FROM livre where titre LIKE 'Star Wars I %' ));");
 
 			// Fermetture des requettes et commit a la base de donnée
 			stmt.close();
